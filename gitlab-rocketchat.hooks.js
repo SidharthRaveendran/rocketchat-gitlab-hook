@@ -183,7 +183,7 @@ class Script {
 
         return {
             content: {
-                username: "gitlab/" + project.name,
+                username: "gitlab/" + project.path_with_namespace,
                 icon_url: USE_ROCKETCHAT_AVATAR ? null : project_avatar,
                 text:
                     data.assignee && data.assignee.name !== data.user.name
@@ -192,7 +192,7 @@ class Script {
                 attachments: [
                     makeAttachment(
                         data.user,
-                        `${user_action} an issue _${data.object_attributes.title}_ on ${project.name}.
+                        `${user_action} an issue _${data.object_attributes.title}_ on ${project.path_with_namespace}.
 *Description:* ${data.object_attributes.description}.
 ${assigned}
 See: ${data.object_attributes.url}`,
@@ -240,7 +240,7 @@ See: ${data.object_attributes.url}`,
         }
         return {
             content: {
-                username: "gitlab/" + project.name,
+                username: "gitlab/" + project.path_with_namespace,
                 icon_url: USE_ROCKETCHAT_AVATAR ? null : avatar,
                 text: at.join(" "),
                 attachments: [
@@ -309,13 +309,13 @@ See: ${data.object_attributes.url}`,
         if (data.checkout_sha === null && !data.commits.length) {
             return {
                 content: {
-                    username: `gitlab/${project.name}`,
+                    username: `gitlab/${project.path_with_namespace}`,
                     icon_url: USE_ROCKETCHAT_AVATAR ? null : avatar,
                     attachments: [
                         makeAttachment(
                             user,
                             `removed branch ${refParser(data.ref)} from [${
-                                project.name
+                                project.path_with_namespace
                             }](${web_url})`
                         ),
                     ],
@@ -327,7 +327,7 @@ See: ${data.object_attributes.url}`,
             // eslint-disable-line
             return {
                 content: {
-                    username: `gitlab/${project.name}`,
+                    username: `gitlab/${project.path_with_namespace}`,
                     icon_url: USE_ROCKETCHAT_AVATAR ? null : avatar,
                     attachments: [
                         makeAttachment(
@@ -336,7 +336,9 @@ See: ${data.object_attributes.url}`,
                                 data.ref
                             )}](${web_url}/commits/${refParser(
                                 data.ref
-                            )}) to [${project.name}](${web_url}), which is ${
+                            )}) to [${
+                                project.path_with_namespace
+                            }](${web_url}), which is ${
                                 data.total_commits_count
                             } commits ahead of master`
                         ),
@@ -346,7 +348,7 @@ See: ${data.object_attributes.url}`,
         }
         return {
             content: {
-                username: `gitlab/${project.name}`,
+                username: `gitlab/${project.path_with_namespace}`,
                 icon_url: USE_ROCKETCHAT_AVATAR ? null : avatar,
                 attachments: [
                     makeAttachment(
@@ -356,7 +358,7 @@ See: ${data.object_attributes.url}`,
                         } commits to branch [${refParser(
                             data.ref
                         )}](${web_url}/commits/${refParser(data.ref)}) in [${
-                            project.name
+                            project.path_with_namespace
                         }](${web_url})`
                     ),
                     {
@@ -400,7 +402,7 @@ See: ${data.object_attributes.url}`,
         }
         return {
             content: {
-                username: `gitlab/${project.name}`,
+                username: `gitlab/${project.path_with_namespace}`,
                 icon_url: USE_ROCKETCHAT_AVATAR ? null : avatar,
                 text: MENTION_ALL_ALLOWED ? "@all" : "",
                 attachments: [makeAttachment(user, message)],
@@ -421,7 +423,7 @@ See: ${data.object_attributes.url}`,
 
         return {
             content: {
-                username: `gitlab/${project.name}`,
+                username: `gitlab/${project.path_with_namespace}`,
                 icon_url: USE_ROCKETCHAT_AVATAR ? null : avatar,
                 attachments: [
                     makeAttachment(
@@ -529,6 +531,12 @@ See: ${data.object_attributes.url}`,
             case "group_rename":
                 text = `Group \`${data.old_full_path}\` was ${action} to \`${data.full_path}\`.`;
                 break;
+            case "push":
+                return this.pushEvent(data);
+            case "tag_push":
+                return this.tagEvent(data);
+            case "repository_update":
+                return;
             default:
                 text = "Unknown system event";
                 break;
