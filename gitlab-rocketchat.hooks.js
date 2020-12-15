@@ -238,11 +238,21 @@ See: ${data.object_attributes.url}`,
             const snippet = data.snippet;
             text = `commented on code snippet [#${snippet.id} ${snippet.title}](${comment.url})`;
         }
+        let rocket_text = at.join("");
+        const mentions = comment.note.match(/(@[a-zA-Z]*)/g);
+        if (mentions !== null) {
+            const reduced = mentions
+                .reduce((r, i) => {
+                    return (r += " " + i);
+                }, "")
+                .substring(1);
+            rocket_text += "\nmentions: " + reduced;
+        }
         return {
             content: {
                 username: "gitlab/" + project.path_with_namespace,
                 icon_url: USE_ROCKETCHAT_AVATAR ? null : avatar,
-                text: at.join(" "),
+                text: rocket_text,
                 attachments: [
                     makeAttachment(
                         user,
